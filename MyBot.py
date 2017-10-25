@@ -31,30 +31,44 @@ while True:
     command_queue = []
 
     dicVal = {}
-    for ship in game_map.get_me().all_ships():
-        for planet in game_map.all_planets():
-            logging.debug(planet)
-            if not planet.is_owned() or not planet.is_full():
+    for ship in set(game_map.get_me().all_ships()):
+        for planet in set(game_map.all_planets()):
+            if not planet.is_full(): #not planet.is_owned() or
                 dicVal[planet] = planet.calculate_distance_between(ship) / planet.radius
 
-        planetMax = min(dicVal.items(), key=lambda x: x[1])
+            try:
+                planetMax = min(dicVal.items(), key=lambda x: x[1])
+            except ValueError:
+                logging.debug("Err")
 
+        ###for planet
         # If the ship is docked
         if ship.docking_status != ship.DockingStatus.UNDOCKED:
             # Skip this ship
             continue
         else:
-            if ship.can_dock(planetMax[0]):
+            if ship.can_dock(planetMax[0]): #and not planet.is_owned():
                 command_queue.append(ship.dock(planetMax[0]))
-                break
-            else:
-                if not planet.is_owned() or not planet.is_full():
-                    navigate_command = ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED/1.5, avoid_obstacles=True, ignore_ships=True)
+                continue
+
+            elif not planet.is_full() or not planet.owner.id == game_map.my_id:
+                navigate_command = ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False)
+            else: #trouver le vaisseaux docké le plus proche
+                for dockship in ship.get_docked_ship().owner.id != game_map.my_id:
+                    navigate_command = ship.navigate(ship.closest_point_to(planetMax[0].ship, planetMax[0].dockship)), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False)
+
 
         if navigate_command:
             command_queue.append(navigate_command)
-            break
+            continue
+    ###for ship
+
     # Send our set of commands to the Halite engine for this turn
-    game.send_command_queue(command_queue)
+    try:
+        game.send_command_queue(command_queue)
+    except Exception:
+        logging.debug("Envoi")
+#        command_queue=[]
+#        game.send_command_queue(command_queue)
     # TURN END
 # GAME END
