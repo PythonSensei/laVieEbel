@@ -27,14 +27,14 @@ while True:
     # Update the map for the new turn and get the latest version
     game_map = game.update_map()
 
-    # Here we define the set of commands to be sent to the Halite engine at the end of the turn
+    # Here we define the set of commands to be sent to the Halite engine at the end if the turn
     command_queue = []
 
     dicVal = {}
     for ship in game_map.get_me().all_ships():
         for planet in game_map.all_planets():
             logging.debug(planet)
-            if not planet.is_owned():
+            if not planet.is_owned() or not planet.is_full():
                 dicVal[planet] = planet.calculate_distance_between(ship) / planet.radius
 
         planetMax = min(dicVal.items(), key=lambda x: x[1])
@@ -48,12 +48,12 @@ while True:
                 command_queue.append(ship.dock(planetMax[0]))
                 break
             else:
-                navigate_command = ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=True)
+                if not planet.is_owned() or not planet.is_full():
+                    navigate_command = ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED/1.5, avoid_obstacles=True, ignore_ships=True)
 
         if navigate_command:
             command_queue.append(navigate_command)
             break
-
     # Send our set of commands to the Halite engine for this turn
     game.send_command_queue(command_queue)
     # TURN END

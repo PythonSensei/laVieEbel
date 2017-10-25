@@ -2,6 +2,8 @@
 
 read -p "Effacer les logs et parties précédentes ? (Y/n)" yesno
 if [[ $yesno =~ [Nn][Oo]?[Nn]? ]]; then
+	echo ""
+else
 	rm *.log *.hlt
 fi
 
