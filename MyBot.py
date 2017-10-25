@@ -44,7 +44,6 @@ while True:
             # Skip this ship
             continue
         else:
-
             if ship.can_dock(planetMax[0]):
                 command_queue.append(ship.dock(planetMax[0]))
                 break

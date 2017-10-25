@@ -1,7 +1,7 @@
 #!/bin/sh
 
-read -p "Effacer les logs et parties précédentes ? (y/N)" yesno
-if [[ $yesno =~ [Yy][Ee]?[Ss]? ]]; then
+read -p "Effacer les logs et parties précédentes ? (Y/n)" yesno
+if [[ $yesno =~ [Nn][Oo]?[Nn]? ]]; then
 	rm *.log *.hlt
 fi
 
