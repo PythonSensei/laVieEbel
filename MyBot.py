@@ -31,15 +31,10 @@ while True:
     command_queue = []
 
     dicVal = {}
-    for ship in set(game_map.get_me().all_ships()):
+    for ship in game_map.get_me().all_ships():
         for planet in set(game_map.all_planets()):
-            if not planet.is_full(): #not planet.is_owned() or
-                dicVal[planet] = planet.calculate_distance_between(ship) / planet.radius
-
-            try:
-                planetMax = min(dicVal.items(), key=lambda x: x[1])
-            except ValueError:
-                logging.debug("Err")
+            dicVal[planet] = planet.calculate_distance_between(ship) / planet.radius
+        planetMax = min(dicVal.items(), key=lambda x: x[1])
 
         ###for planet
         # If the ship is docked
@@ -47,23 +42,30 @@ while True:
             # Skip this ship
             continue
         else:
-            if ship.can_dock(planetMax[0]): #and not planet.is_owned():
+            if not planetMax[0].is_full() and ship.can_dock(planetMax[0]):
                 command_queue.append(ship.dock(planetMax[0]))
+                continue
 
-            elif not planet.is_full() or planet.owner == game_map.my_id:
-                command_queue.append(ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
+            elif not planetMax[0].is_full() or planet.owner == game_map.my_id:
+                navigate_command = ship.navigate(
+                    ship.closest_point_to(planetMax[0]),
+                    game_map,
+                    speed=hlt.constants.MAX_SPEED,
+                    ignore_ships=False,
+                    ignore_planets=False)
 
             else: #trouver le vaisseaux docké le plus proche
                 for dockship in planet.all_docked_ships():
                     if dockship.owner.id != None or dockship.owner.id != game_map.my_id:
-                        command_queue.append(ship.navigate(ship.closest_point_to(dockship), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
+                        navigate_command = ship.navigate(ship.closest_point_to(dockship),
+                            game_map,
+                            speed=hlt.constants.MAX_SPEED,
+                            ignore_ships=False,
+                            ignore_planets=False)
                         continue
 
-
-
-#        if navigate_command:
-#            command_queue.append(navigate_command)
-#            continue
+        if navigate_command:
+            command_queue.append(navigate_command)
     ###for ship
 
     # Send our set of commands to the Halite engine for this turn
