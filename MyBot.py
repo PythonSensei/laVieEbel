@@ -49,16 +49,16 @@ while True:
         else:
             if ship.can_dock(planetMax[0]): #and not planet.is_owned():
                 command_queue.append(ship.dock(planetMax[0]))
-                continue
 
-            elif not planet.is_full() or not planet.owner == game_map.my_id:
+            elif not planet.is_full() or planet.owner == game_map.my_id:
                 command_queue.append(ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
-                continue
+
             else: #trouver le vaisseaux docké le plus proche
                 for dockship in planet.all_docked_ships():
                     if dockship.owner.id != None or dockship.owner.id != game_map.my_id:
                         command_queue.append(ship.navigate(ship.closest_point_to(dockship), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
                         continue
+
 
 
 #        if navigate_command:
