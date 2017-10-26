@@ -51,23 +51,23 @@ while True:
                 command_queue.append(ship.dock(planetMax[0]))
                 continue
 
-            elif not planet.is_full() or not planet.owner.id == game_map.my_id:
-                navigate_command = ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False)
+            elif not planet.is_full() or not planet.owner == game_map.my_id:
+                command_queue.append(ship.navigate(ship.closest_point_to(planetMax[0]), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
+                continue
             else: #trouver le vaisseaux docké le plus proche
-                for dockship in ship.get_docked_ship().owner.id != game_map.my_id:
-                    navigate_command = ship.navigate(ship.closest_point_to(planetMax[0].ship, planetMax[0].dockship)), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False)
+                for dockship in planet.all_docked_ships():
+                    if dockship.owner.id != None or dockship.owner.id != game_map.my_id:
+                        command_queue.append(ship.navigate(ship.closest_point_to(dockship), game_map, speed=hlt.constants.MAX_SPEED, ignore_ships=False, ignore_planets=False))
+                        continue
 
 
-        if navigate_command:
-            command_queue.append(navigate_command)
-            continue
+#        if navigate_command:
+#            command_queue.append(navigate_command)
+#            continue
     ###for ship
 
     # Send our set of commands to the Halite engine for this turn
-    try:
-        game.send_command_queue(command_queue)
-    except Exception:
-        logging.debug("Envoi")
+    game.send_command_queue(command_queue)
 #        command_queue=[]
 #        game.send_command_queue(command_queue)
     # TURN END
