@@ -17,9 +17,9 @@ import logging
 
 # GAME START
 # Here we define the bot's name as Settler and initialize the game, including communication with the Halite engine.
-game = hlt.Game("Settler")
+game = hlt.Game("Dakyne")
 # Then we print our start message to the logs
-logging.info("Starting my Settler bot!")
+logging.info("Starting my newbie bot!")
 
 while True:
     # TURN START
@@ -36,23 +36,30 @@ while True:
             continue
 
         # For each planet in the game (only non-destroyed planets are included)
-        entities_by_distance = game_map.nearby_entities_by_distance(ship)
-        nearest_planet = None
-        for distance in sorted(entities_by_distance):
-            nearest_planet = next((nearest_entity for nearest_entity in entities_by_distance[distance] if isinstance(nearest_entity, hlt.entity.Planet)), None)
-            if nearest_planet:
-                break
-
+        # Bugged part
+        dicVal={}
+        newdic={}
         for planet in game_map.all_planets():
+            dicVal[planet] = planet.calculate_distance_between(ship)
+            logging.debug(planet)
+        newdic=sorted(dicVal.items(), key=lambda x: x[1])
+        logging.debug("Newdic")
+        logging.debug(dict(newdic))
+        logging.debug("test")
+        logging.debug(newdic[0])
+
+        for planet in sorted(dicVal.items(), key=lambda x: x[1]):
             # If the planet is owned
-            if nearest_planet.is_full():
-                navigate_command = ship.thrust(nearest_planet, ship.calculate_angle_between(nearest_planet))
+            #working part
+            if planet.is_full():
+                continue
+                #navigate_command = ship.navigate(ship.closest_point_to(nearest_planet),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=False)
 
 
             # If we can dock, let's (try to) dock. If two ships try to dock at once, neither will be able to.
-            if ship.can_dock(nearest_planet):
+            if ship.can_dock(planet):
                 # We add the command by appending it to the command_queue
-                command_queue.append(ship.dock(nearest_planet))
+                command_queue.append(ship.dock(planet))
             else:
                 # If we can't dock, we move towards the closest empty point near this planet (by using closest_point_to)
                 # with constant speed. Don't worry about pathfinding for now, as the command will do it for you.
@@ -63,7 +70,7 @@ while True:
                 # make move decisions much quicker. As your skill progresses and your moves turn more optimal you may
                 # wish to turn that option off.
                 navigate_command = ship.navigate(
-                    ship.closest_point_to(nearest_planet),
+                    ship.closest_point_to(planet),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
                     ignore_ships=False)
