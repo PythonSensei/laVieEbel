@@ -7,4 +7,4 @@ else
 	rm *.log *.hlt > /dev/null
 fi
 
-./halite -d "240 160" "python3 MyBot.py" "python3 MyBot.py"
+./halite -d "240 160" "python3 MyBot.py" "python3 MyBotold.py"

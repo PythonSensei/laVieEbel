@@ -37,46 +37,43 @@ while True:
 
         # For each planet in the game (only non-destroyed planets are included)
         # Bugged part
+        dicShip={}
+        newShip={}
         dicVal={}
         newdic={}
+#        for vaisseaux in game_map.all_ships():
+#            dicShip[vaisseaux] = vaisseaux.calculate_distance_between(ship)
+#        newShip= sorted(dicShip).items(), key=lambda x: x[1])
         for planet in game_map.all_planets():
             dicVal[planet] = planet.calculate_distance_between(ship)
-            logging.debug(planet)
-        newdic=sorted(dicVal.items(), key=lambda x: x[1])
-        logging.debug("Newdic")
-        logging.debug(dict(newdic))
-        logging.debug("test")
-        logging.debug(newdic[0])
-
-        for planet in sorted(dicVal.items(), key=lambda x: x[1]):
-            # If the planet is owned
-            #working part
-            if planet.is_full():
-                continue
-                #navigate_command = ship.navigate(ship.closest_point_to(nearest_planet),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=False)
-
-
+        newdic = sorted(dicVal.items(), key=lambda x: x[1])
+        # for nudes in dickpick
+        for planet in newdic:
+            if planet[0].is_full():
+#                if planet[0].owner.id == game_map.my_id:
+                for vaisseaux in planet[0].all_docked_ships():
+                    dicShip[vaisseaux] = vaisseaux.calculate_distance_between(ship)
+                newShip = sorted(dicShip.items(), key=lambda x: x[1])
+                for vaiss in newShip:
+                    if vaiss[0].owner.id != game_map.my_id:
+                        command_queue.append(ship.navigate(vaiss[0],game_map,speed=int(hlt.constants.MAX_SPEED),ignore_planets=False))
+                    else:
+                        continue
+                    break
+#                else:
+#                    command_queue.append(ship.navigate(planet[0],game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=True,ignore_planets=True))
             # If we can dock, let's (try to) dock. If two ships try to dock at once, neither will be able to.
-            if ship.can_dock(planet):
+            elif ship.can_dock(planet[0]):
                 # We add the command by appending it to the command_queue
-                command_queue.append(ship.dock(planet))
+                command_queue.append(ship.dock(planet[0]))
             else:
-                # If we can't dock, we move towards the closest empty point near this planet (by using closest_point_to)
-                # with constant speed. Don't worry about pathfinding for now, as the command will do it for you.
-                # We run this navigate command each turn until we arrive to get the latest move.
-                # Here we move at half our maximum speed to better control the ships
-                # In order to execute faster we also choose to ignore ship collision calculations during navigation.
-                # This will mean that you have a higher probability of crashing into ships, but it also means you will
-                # make move decisions much quicker. As your skill progresses and your moves turn more optimal you may
-                # wish to turn that option off.
+
                 navigate_command = ship.navigate(
-                    ship.closest_point_to(planet),
+                    ship.closest_point_to(planet[0]),
                     game_map,
                     speed=int(hlt.constants.MAX_SPEED),
                     ignore_ships=False)
-                # If the move is possible, add it to the command_queue (if there are too many obstacles on the way
-                # or we are trapped (or we reached our destination!), navigate_command will return null;
-                # don't fret though, we can run the command again the next turn)
+
                 if navigate_command:
                     command_queue.append(navigate_command)
             break
