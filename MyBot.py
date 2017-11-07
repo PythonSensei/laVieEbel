@@ -41,6 +41,7 @@ while True:
         logging.debug("———")
         logging.debug("Current ship : %s" % ship.id)
         #If the ship is docked#
+        logging.debug("Docking status ship : %s" % ship.docking_status)
         if ship.docking_status != ship.DockingStatus.UNDOCKED:
             #1.1.1. Vaisseau suivant#
             logging.debug("Ship %s is not flying" % ship.id)
@@ -49,6 +50,7 @@ while True:
         #1.2. Sinon#
         else:
         #1.2. Pour chaque planète (de la plus proche à la plus lointaine)#
+            logging.debug("else")
             dictVal={}
             for planet in game_map.all_planets():
                 dictVal[planet] = planet.calculate_distance_between(ship)
@@ -66,48 +68,49 @@ while True:
                             logging.debug("Planet %s is empty" % planet[0].id)
                             command_queue.append(ship.dock(planet[0]))
                             logging.debug("Ship %s can dock on this planet" % ship.id)
-                            break
         #1.2.1.1.2. Si loin#
                         else:
         #1.2.1.1.2.1. Aller à la planète#
-                            logging.debug("Move to planet %s" % planet[0].id)
+                            logging.debug("Move to my planet %s" % planet[0].id)
                             navigate_command = ship.navigate(ship.closest_point_to(planet[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=False)
-                            break
+                        break
         #1.2.1.2. Si plein#
                     else:
         #1.2.1.2.1. Planète suivante#
                         continue
         #1.2.2. Sinon si la planète est à l'ennemi#
                 elif not planet[0].owner == game_map.get_me() and not planet[0].owner == None:
+                    logging.debug("Test")
         #1.2.2.1. Aller à coté des vaisseaux dockés (sans suicide)#
                     dictShip={}
                     for vaisseaux in planet[0].all_docked_ships():
                         dictShip[vaisseaux] = vaisseaux.calculate_distance_between(ship)
                     listShip = sorted(dictShip.items(), key=lambda x: x[1])
-                    for vaiss in listShip:
-                        #if not vaiss[0].owner == game_map.get_me():# À priori ce test ne sert à rien
-                            navigate_command = ship.navigate(ship.closest_point_to(vaiss[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_planets=False)
-                            logging.debug("Déplacement vers le vaisseau %s" % vaiss[0].id)
-                            break
+                    #for vaiss in listShip:
+                    #    if not vaiss[0].owner == game_map.get_me():# À priori ce test ne sert à rien
+                    navigate_command = ship.navigate(ship.closest_point_to(vaiss[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_planets=False)
+                    logging.debug("Move to ship %s" % vaiss[0].id)
+                    #        break
+                    break
 
         #1.2.3. Sinon (la planète n'est à personne)#
                 else:
         #1.2.3.1. Si peut dock#
                     if ship.can_dock(planet[0]):
         #1.2.3.1.1. Aller se docker#
-                        logging.debug("La planète %s est vide" % planet[0].id)
                         command_queue.append(ship.dock(planet[0]))
-                        logging.debug("Le ship %s peut dock sur la planète précédente" % ship.id)
-                        break
+                        logging.debug("Ship %s can dock on this empty planet" % ship.id)
         #1.2.3.2. Sinon#
                     else:
         #1.2.3.2.1. Se rapprocher puis docker#
-                        logging.debug("Déplacement vers la planète %s" % planet[0].id)
+                        logging.debug("Moving to empty planet %s" % planet[0].id)
                         navigate_command = ship.navigate(ship.closest_point_to(planet[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=False)
-                        break
+                    break
+                break
 
-                if navigate_command:
-                    command_queue.append(navigate_command)
+        if navigate_command:
+            command_queue.append(navigate_command)
+                
 
 
     # Send our set of commands to the Halite engine for this turn
