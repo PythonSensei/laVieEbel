@@ -36,6 +36,11 @@ while True:
     # Here we define the set of commands to be sent to the Halite engine at the end of the turn
     command_queue = []
     # For every ship that I control
+    blyat=0
+    for ship in game_map.get_me().all_ships():
+        logging.debug(ship)
+        logging.debug("Index %d " % blyat)
+        blyat+=1
     for ship in game_map.get_me().all_ships():
         #1.1. Si le vaisseau n'est pas en vol#
         logging.debug("———")
@@ -65,12 +70,14 @@ while True:
         #1.2.1.1.1. Si peut dock#
                         if ship.can_dock(planet[0]):
         #1.2.1.1.1.1. Dock#
+                            logging.debug("1")
                             logging.debug("Planet %s is empty" % planet[0].id)
                             command_queue.append(ship.dock(planet[0]))
                             logging.debug("Ship %s can dock on this planet" % ship.id)
         #1.2.1.1.2. Si loin#
                         else:
         #1.2.1.1.2.1. Aller à la planète#
+                            logging.debug("2")
                             logging.debug("Move to my planet %s" % planet[0].id)
                             navigate_command = ship.navigate(ship.closest_point_to(planet[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_ships=False)
                         break
@@ -88,6 +95,7 @@ while True:
                     listShip = sorted(dictShip.items(), key=lambda x: x[1])
                     #for vaiss in listShip:
                     #    if not vaiss[0].owner == game_map.get_me():# À priori ce test ne sert à rien
+                    logging.debug("3")
                     navigate_command = ship.navigate(ship.closest_point_to(vaiss[0]),game_map,speed=int(hlt.constants.MAX_SPEED),ignore_planets=False)
                     logging.debug("Move to ship %s" % vaiss[0].id)
                     #        break
@@ -98,7 +106,8 @@ while True:
         #1.2.3.1. Si peut dock#
                     if ship.can_dock(planet[0]):
         #1.2.3.1.1. Aller se docker#
-                        command_queue.append(ship.dock(planet[0]))
+                        logging.debug("4")
+                        navigate_command = ship.dock(planet[0])
                         logging.debug("Ship %s can dock on this empty planet" % ship.id)
         #1.2.3.2. Sinon#
                     else:
@@ -108,12 +117,15 @@ while True:
                     break
                 break
 
-        if navigate_command:
-            command_queue.append(navigate_command)
+            if navigate_command:
+                logging.debug("Passer par ici")
+                command_queue.append(navigate_command)
                 
 
 
     # Send our set of commands to the Halite engine for this turn
+    logging.debug("     ")
+    logging.debug(command_queue)
     logging.debug("     ")
     game.send_command_queue(command_queue)
     # TURN END
